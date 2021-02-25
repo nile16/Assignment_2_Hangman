@@ -8,95 +8,116 @@ namespace Assignment_2_Hangman
         static void Main()
         {
             Random ranGen = new Random();
-            string[] arrayOfWords = new string[] { "lexicon" };
+            string[] arrayOfWords = new string[] { "LEXICON" };
             string secretWord = arrayOfWords[ranGen.Next(arrayOfWords.Length)];
             StringBuilder wrongLetters = new StringBuilder();
             char[] correctLetters = new char[secretWord.Length];
-            int guessesLeft = 10;
             Array.Fill<char>(correctLetters, '_');
+            int guessesLeft = 10;
 
             while (true)
             {
                 UpdateScreen(correctLetters, wrongLetters, guessesLeft);
 
-                string userInput = Console.ReadLine();
+                Console.Write("\nEnter your quess: ");
+                string userGuess = Console.ReadLine().ToUpper();
 
-                // User guess a whole word
-                if (userInput.Length > 1)
+                // The player guess a whole word
+                if (userGuess.Length > 1)
                 {
-                    if (userInput.Equals(secretWord))
+                    guessesLeft--;
+
+                    if (userGuess.Equals(secretWord))
                     {
+                        FillInCorrectLetter(secretWord, ref correctLetters);
+                        UpdateScreen(correctLetters, wrongLetters, guessesLeft);
                         PresentWin();
                         break;
                     }
 
-                    guessesLeft--;
-
                     if (guessesLeft == 0)
                     {
+                        UpdateScreen(correctLetters, wrongLetters, guessesLeft);
                         PresentLoss();
                         break;
                     }
                 }
 
-                // User guess a single char
-                if (userInput.Length == 1)
+                // The player guess a single letter
+                if (userGuess.Length == 1)
                 {
-                    char singleLetterGuess = userInput[0];
-
-                    if (!AlreadyGuessed(singleLetterGuess, correctLetters, wrongLetters))
+                    if (IsGuessNovel(userGuess[0], correctLetters, wrongLetters))
                     {
-                        if (!CheckMatch(singleLetterGuess, secretWord, ref correctLetters))
+                        guessesLeft--;
+
+                        if (IsGuessCorrect(userGuess[0], secretWord))
                         {
-                            wrongLetters.Append(singleLetterGuess);
+                            FillInCorrectLetter(userGuess[0], secretWord, ref correctLetters);
+                        }
+                        else
+                        {
+                            wrongLetters.Append(userGuess[0]);
                         }
 
-                        if (CheckWin(correctLetters))
+                        if (IsWholeWordFound(correctLetters))
                         {
+                            UpdateScreen(correctLetters, wrongLetters, guessesLeft);
                             PresentWin();
                             break;
                         }
 
-                        guessesLeft--;
-
                         if (guessesLeft == 0)
                         {
+                            UpdateScreen(correctLetters, wrongLetters, guessesLeft);
                             PresentLoss();
                             break;
                         }
-
                     }
                 }
             }
-
             Console.Write("\n\n\n\n");
         }
 
-
-        static bool CheckMatch(char singleLetterGuess, string secretWord, ref char[] correctLetters)
+        static bool IsGuessCorrect(char guess, string secretWord)
         {
             bool match = false;
 
-            for (int i = 0; i < secretWord.Length; i++)
+            foreach (char letter in secretWord)
             {
-                if (secretWord[i] == singleLetterGuess)
+                if (letter == guess)
                 {
-                    correctLetters[i] = secretWord[i];
                     match = true;
                 }
             }
-
             return match;
         }
+        static void FillInCorrectLetter(char guess, string secretWord, ref char[] correctLetters)
+        {
+            for (int i = 0; i < secretWord.Length; i++)
+            {
+                if (secretWord[i] == guess)
+                {
+                    correctLetters[i] = secretWord[i];
+                }
+            }
+        }
 
-        static bool CheckWin(char[] correctLetters)
+        static void FillInCorrectLetter(string secretWord, ref char[] correctLetters)
+        {
+            for (int i = 0; i < secretWord.Length; i++)
+            {
+                correctLetters[i] = secretWord[i];
+            }
+        }
+
+        static bool IsWholeWordFound(char[] correctLetters)
         {
             return !Array.Exists<char>(correctLetters, ele => ele == '_');
         }
 
-        static bool AlreadyGuessed(char userGuess, char[] correctLetters, StringBuilder wrongLetters)
+        static bool IsGuessNovel(char userGuess, char[] correctLetters, StringBuilder wrongLetters)
         {
-            return wrongLetters.ToString().Contains(userGuess) || Array.Exists<char>(correctLetters, ele => ele == userGuess);
+            return !wrongLetters.ToString().Contains(userGuess) && !Array.Exists<char>(correctLetters, ele => ele == userGuess);
         }
 
         static void UpdateScreen(char[] correctLetters, StringBuilder wrongLetters, int guessesLeft)
@@ -110,20 +131,19 @@ namespace Assignment_2_Hangman
                 Console.Write(letter + " ");
             }
 
-            Console.Write("\n\n\nWrong: ");
+            Console.Write("\n\nWrong guesses: ");
 
             foreach (char letter in wrongLetters.ToString())
             {
                 Console.Write(letter);
             }
 
-            Console.Write($"\nGuesses left: {guessesLeft}\n\nEnter quess: ");
+            Console.Write($"\nGuesses left: {guessesLeft}\n");
         }
 
         static void PresentWin()
         {
-            Console.Clear();
-            Console.WriteLine("\n\n\n");
+            Console.WriteLine("\n\n");
             Console.WriteLine("Y     Y      OO      U      U         W         W       OO      N       N");
             Console.WriteLine("Y     Y    O    O    U      U         W         W     O    O    N N     N");
             Console.WriteLine(" Y   Y    O      O   U      U         W         W    O      O   N  N    N");
@@ -135,15 +155,14 @@ namespace Assignment_2_Hangman
 
         static void PresentLoss()
         {
-            Console.Clear();
-            Console.WriteLine("\n\n\n");
-            Console.WriteLine("Y     Y      OO      U      U         L             OO      TTTTTTTT");
-            Console.WriteLine("Y     Y    O    O    U      U         L           O    O        T");
-            Console.WriteLine(" Y   Y    O      O   U      U         L          O      O       T");
-            Console.WriteLine("  Y Y     O      O   U      U         L          O      O       T");
-            Console.WriteLine("   Y      O      O   U      U         L          O      O       T");
-            Console.WriteLine("   Y       O    O     U    U          L           O    O        T");
-            Console.WriteLine("   Y         OO         UU            LLLLLLLL      OO          T");
+            Console.WriteLine("\n\n");
+            Console.WriteLine("Y     Y      OO      U      U         L             OO          SSSS    TTTTTTTT");
+            Console.WriteLine("Y     Y    O    O    U      U         L           O    O      S             T");
+            Console.WriteLine(" Y   Y    O      O   U      U         L          O      O     S             T");
+            Console.WriteLine("  Y Y     O      O   U      U         L          O      O       SSS         T");
+            Console.WriteLine("   Y      O      O   U      U         L          O      O           S       T");
+            Console.WriteLine("   Y       O    O     U    U          L           O    O            S       T");
+            Console.WriteLine("   Y         OO         UU            LLLLLLLL      OO         SSSS         T");
         }
     }
 }
