@@ -8,7 +8,7 @@ namespace Assignment_2_Hangman
         static void Main()
         {
             Random ranGen = new Random();
-            string[] arrayOfWords = new string[] { "LEXICON" };
+            string[] arrayOfWords = new string[] { "LEXICON", "CSHARP", "JAVA", "VÄXJÖ" };
             string secretWord = arrayOfWords[ranGen.Next(arrayOfWords.Length)];
             StringBuilder wrongLetters = new StringBuilder();
             char[] correctLetters = new char[secretWord.Length];
@@ -91,6 +91,7 @@ namespace Assignment_2_Hangman
             }
             return match;
         }
+
         static void FillInCorrectLetter(char guess, string secretWord, ref char[] correctLetters)
         {
             for (int i = 0; i < secretWord.Length; i++)
