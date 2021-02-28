@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 
 namespace Assignment_2_Hangman
 {
@@ -8,7 +9,7 @@ namespace Assignment_2_Hangman
         static void Main()
         {
             Random ranGen = new Random();
-            string[] arrayOfWords = new string[] { "LEXICON", "CSHARP", "JAVA", "VÄXJÖ" };
+            string[] arrayOfWords = System.IO.File.ReadAllText("../../../words.csv").Split(',');
             string secretWord = arrayOfWords[ranGen.Next(arrayOfWords.Length)];
             StringBuilder wrongLetters = new StringBuilder();
             char[] correctLetters = new char[secretWord.Length];
@@ -18,7 +19,6 @@ namespace Assignment_2_Hangman
             while (true)
             {
                 UpdateScreen(correctLetters, wrongLetters, guessesLeft);
-
                 Console.Write("\nEnter your quess: ");
                 string userGuess = Console.ReadLine().ToUpper();
 
@@ -30,16 +30,6 @@ namespace Assignment_2_Hangman
                     if (userGuess.Equals(secretWord))
                     {
                         FillInCorrectLetter(secretWord, ref correctLetters);
-                        UpdateScreen(correctLetters, wrongLetters, guessesLeft);
-                        PresentWin();
-                        break;
-                    }
-
-                    if (guessesLeft == 0)
-                    {
-                        UpdateScreen(correctLetters, wrongLetters, guessesLeft);
-                        PresentLoss();
-                        break;
                     }
                 }
 
@@ -50,7 +40,7 @@ namespace Assignment_2_Hangman
                     {
                         guessesLeft--;
 
-                        if (IsGuessCorrect(userGuess[0], secretWord))
+                        if (secretWord.Contains(userGuess[0]))
                         {
                             FillInCorrectLetter(userGuess[0], secretWord, ref correctLetters);
                         }
@@ -58,38 +48,24 @@ namespace Assignment_2_Hangman
                         {
                             wrongLetters.Append(userGuess[0]);
                         }
-
-                        if (IsWholeWordFound(correctLetters))
-                        {
-                            UpdateScreen(correctLetters, wrongLetters, guessesLeft);
-                            PresentWin();
-                            break;
-                        }
-
-                        if (guessesLeft == 0)
-                        {
-                            UpdateScreen(correctLetters, wrongLetters, guessesLeft);
-                            PresentLoss();
-                            break;
-                        }
                     }
+                }
+
+                if (IsWholeWordFound(correctLetters))
+                {
+                    UpdateScreen(correctLetters, wrongLetters, guessesLeft);
+                    PresentWin();
+                    break;
+                }
+
+                if (guessesLeft == 0)
+                {
+                    UpdateScreen(correctLetters, wrongLetters, guessesLeft);
+                    PresentLoss();
+                    break;
                 }
             }
             Console.Write("\n\n\n\n");
-        }
-
-        static bool IsGuessCorrect(char guess, string secretWord)
-        {
-            bool match = false;
-
-            foreach (char letter in secretWord)
-            {
-                if (letter == guess)
-                {
-                    match = true;
-                }
-            }
-            return match;
         }
 
         static void FillInCorrectLetter(char guess, string secretWord, ref char[] correctLetters)
@@ -113,12 +89,12 @@ namespace Assignment_2_Hangman
 
         static bool IsWholeWordFound(char[] correctLetters)
         {
-            return !Array.Exists<char>(correctLetters, ele => ele == '_');
+            return !correctLetters.Contains('_');
         }
 
         static bool IsGuessNovel(char userGuess, char[] correctLetters, StringBuilder wrongLetters)
         {
-            return !wrongLetters.ToString().Contains(userGuess) && !Array.Exists<char>(correctLetters, ele => ele == userGuess);
+            return !wrongLetters.ToString().Contains(userGuess) && !correctLetters.Contains(userGuess);
         }
 
         static void UpdateScreen(char[] correctLetters, StringBuilder wrongLetters, int guessesLeft)
@@ -132,12 +108,7 @@ namespace Assignment_2_Hangman
                 Console.Write(letter + " ");
             }
 
-            Console.Write("\n\nWrong guesses: ");
-
-            foreach (char letter in wrongLetters.ToString())
-            {
-                Console.Write(letter);
-            }
+            Console.Write("\n\nWrong guesses: " + wrongLetters.ToString());
 
             Console.Write($"\nGuesses left: {guessesLeft}\n");
         }
